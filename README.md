@@ -55,25 +55,15 @@ python create_expression_vector.py --entry_vector_folder import/entry_vectors --
 
 ## Functions
 
-### `read_xdna_file(xdna_file)`
+- `read_xdna_file(xdna_file)`: Reads a `.xdna` file and transforms all sequences to upper case.
 
-Reads a `.xdna` file and transforms all sequences to upper case.
+- `read_dna_file(dna_file)`: Reads a `.dna` file and transforms all sequences to upper case.
 
-### `read_dna_file(dna_file)`
+- `read_gb_file(gb_file)`: Reads a `.gb` file and transforms all sequences to upper case.
 
-Reads a `.dna` file and transforms all sequences to upper case.
+- `create_expression_vector(entry_vector_file, destination_vector_file, output_folder, features_file)`: Creates an expression vector from the given entry and destination vector files, and saves it to the specified output folder.
 
-### `read_gb_file(gb_file)`
-
-Reads a `.gb` file and transforms all sequences to upper case.
-
-### `create_expression_vector(entry_vector_file, destination_vector_file, output_folder, features_file)`
-
-Creates an expression vector from the given entry and destination vector files, and saves it to the specified output folder.
-
-### `process_folder(entry_vector_folder, dest_vector_folder, features_file, output_folder)`
-
-Parses the `create_expression_vector` function over the `entry_vector_folder` and `dest_vector_folder` folders to generate expression vectors with feature maps from the `feature_files` files and saves all expression vectors in the `output_folder`
+- `process_folder(entry_vector_folder, dest_vector_folder, features_file, output_folder)`: Parses the `create_expression_vector` function over the `entry_vector_folder` and `dest_vector_folder` folders to generate expression vectors with feature maps from the `feature_files` files and saves all expression vectors in the `output_folder`
 
 ## License
 
