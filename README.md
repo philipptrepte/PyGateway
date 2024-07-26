@@ -1,6 +1,8 @@
 # PyGateway
 PyGateway is a Python script to generate expression constructs by performing an in silico LR gateway reaction with entry and destination vectors. The script supports `.xdna`, `.dna` and `.gb` file formats and allows for the addition of features from a CSV file. The output vector files are in `.gb` file format.
 
+**New entry vector** maps can be created using the [ccsb-vectormaps](https://github.com/csecker/ccsb-vectormaps) repository from [Christopher Secker](https://github.com/csecker).
+
 ## Prerequisites
 
 - Python 3.x
@@ -27,11 +29,6 @@ PyGateway is a Python script to generate expression constructs by performing an 
     conda install snapgene-reader
     ```
 
-3. Make executable
-   ```sh
-   chmod +x create_expression_vector.py
-   ```
-
 ## Usage
 
 To create expression vector files, run the `create_expression_vector.py` script with the appropriate arguments:
@@ -42,10 +39,10 @@ python create_expression_vector.py --entry_vector_folder <entry_vector_folder> -
 
 ## Arguments
 
-- `--entry_vector_folder`: Path to the folder containing entry vector files.
-- `--dest_vector_folder`: Path to the folder containing destination vector files.
-- `--output_folder`: Path to the folder where the output files will be saved.
-- `--features_file`: Path to the CSV file containing features to be added.
+- `--entry_vector_folder` or `-e`: Path to the folder containing entry vector files.
+- `--dest_vector_folder` or `-d`: Path to the folder containing destination vector files.
+- `--output_folder` or `-o`: Path to the folder where the output files will be saved.
+- `--features_file` or `-f`: Path to the CSV file containing features to be added.
 
 ### Example
 
