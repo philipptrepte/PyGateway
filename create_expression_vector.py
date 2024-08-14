@@ -203,15 +203,37 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
 
 def process_folder(entry_vector_folder, dest_vector_folder, features_file, output_folder):
     """Process all files in the given folders"""
+    processed_entry_files = set()
+    processed_dest_files = set()
+    
+    entry_files = set(os.listdir(entry_vector_folder))
+    dest_files = set(os.listdir(dest_vector_folder))
+
     for entry_vector_file in os.listdir(entry_vector_folder):
         entry_vector_path = os.path.join(entry_vector_folder, entry_vector_file)
         for destination_vector_file in os.listdir(dest_vector_folder):
             destination_vector_path = os.path.join(dest_vector_folder, destination_vector_file)
             try:
                 create_expression_vector(entry_vector_path, destination_vector_path, features_file, output_folder)
+                processed_entry_files.add(entry_vector_file)
+                processed_dest_files.add(destination_vector_file)
             except ValueError as e:
                 print(f"\n !!! Error processing {entry_vector_file} and {destination_vector_file}: {e} Skipping to the next file. \n")
                 continue
+
+    # Check if all files were processed
+    unprocessed_entry_files = entry_files - processed_entry_files
+    unprocessed_dest_files = dest_files - processed_dest_files
+    
+    if unprocessed_entry_files:
+        print(f"\n!!! Unprocessed files in entry_vector_folder: {unprocessed_entry_files}")
+    else:
+        print("\nAll files in entry_vector_folder were processed.")
+    
+    if unprocessed_dest_files:
+        print(f"\n!!! Unprocessed files in dest_vector_folder: {unprocessed_dest_files}\n")
+    else:
+        print("\nAll files in dest_vector_folder were processed.\n")
 
 def main():
     active_env = os.getenv('CONDA_DEFAULT_ENV')
