@@ -88,12 +88,12 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
     
     # Detect att1 and att2 sites in the entry vector
     att1_entry_start = entry_vector.seq.find(gateway_dict["att1_shared"])
-    att1_entry_end = att1_entry_start + len(gateway_dict["att1_shared"]) + 3
+    att1_entry_end = att1_entry_start + len(gateway_dict["att1_shared"])
     if(att1_entry_start == -1):
         att1_entry_end = 0
         raise ValueError("No att1 site found in the entry vector.")    
 
-    att2_entry_start = entry_vector.seq.find(gateway_dict["att2_shared"]) -3
+    att2_entry_start = entry_vector.seq.find(gateway_dict["att2_shared"])
     if(att2_entry_start == -4):
         att2_entry_start = 0
         raise ValueError("No att2 site found in the entry vector.")
@@ -105,12 +105,12 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
 
     # Detect att1 and att2 sites in the destination vector
     att1_destination_start = destination_vector.seq.find(gateway_dict["att1_shared"])
-    att1_destination_end = att1_destination_start + len(gateway_dict["att1_shared"]) + 3
+    att1_destination_end = att1_destination_start + len(gateway_dict["att1_shared"]) 
     if(att1_destination_start == -1):
         att1_destination_end = 0
         raise ValueError("No att1 site found in the destination vector.")
     
-    att2_destination_start = destination_vector.seq.find(gateway_dict["att2_shared"]) -3
+    att2_destination_start = destination_vector.seq.find(gateway_dict["att2_shared"])
     if(att2_destination_start == -4):
         att2_destination_start = 0
         raise ValueError("No att2 site found in the destination vector.")
@@ -201,7 +201,7 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
         os.makedirs(output_folder)
     
     output = os.path.join(output_folder, new_name)
-    SeqIO.write(expression_vector, output, "genbank")
+    SeqIO.write(expression_vector, output + ".gb", "genbank")
     print(f"Expression vector map saved to {output}")
 
 def process_folder(entry_vector_folder, dest_vector_folder, features_file, output_folder):
