@@ -3,6 +3,7 @@
 import argparse
 import csv
 import os
+import sys
 import re
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -209,17 +210,25 @@ def process_folder(entry_vector_folder, dest_vector_folder, features_file, outpu
             try:
                 create_expression_vector(entry_vector_path, destination_vector_path, features_file, output_folder)
             except ValueError as e:
-                print(f"Error processing {entry_vector_file} and {destination_vector_file}: {e}. Skipping to the next file.")
+                print(f"\n !!! Error processing {entry_vector_file} and {destination_vector_file}: {e} Skipping to the next file. \n")
                 continue
 
 def main():
+    active_env = os.getenv('CONDA_DEFAULT_ENV')
+    if active_env != 'PyGateway':
+        print(f"Warning: The conda environment 'PyGateway' is not activated. Current active environment: {active_env}. \n")
+    
     parser = argparse.ArgumentParser(description="Create expression vector by performing a virtual LR reaction between an entry and destination vector")
     parser.add_argument("-e", "--entry_vector_folder", type=str, help="The folder containing all entry vector files", default="import/entry_vectors/")
     parser.add_argument("-d", "--dest_vector_folder", type=str, help="The folder containing all destination vector files", default="import/destination_vectors/")
     parser.add_argument("-f", "--features_file", type=str, help="The CSV file containing the features to be added to the expression vector", default="import/features/all_features.csv")
     parser.add_argument("-o", "--output_folder", type=str, help="The output folder", default="output/")
     args = parser.parse_args()
-    process_folder(args.entry_vector_folder, args.dest_vector_folder, args.output_folder, args.features_file)
+    try:
+        process_folder(args.entry_vector_folder, args.dest_vector_folder, args.output_folder, args.features_file)
+    except ValueError as e:
+        print(f"Error processing files: {e}.")
+        print(f"Check if the correct conda environment is activated. Current active conda environment: {active_env}.")
 
 if __name__ == "__main__":
     main()
