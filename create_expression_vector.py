@@ -206,7 +206,11 @@ def process_folder(entry_vector_folder, dest_vector_folder, features_file, outpu
         entry_vector_path = os.path.join(entry_vector_folder, entry_vector_file)
         for destination_vector_file in os.listdir(dest_vector_folder):
             destination_vector_path = os.path.join(dest_vector_folder, destination_vector_file)
-            create_expression_vector(entry_vector_path, destination_vector_path, features_file, output_folder)
+            try:
+                create_expression_vector(entry_vector_path, destination_vector_path, features_file, output_folder)
+            except ValueError as e:
+                print(f"Error processing {entry_vector_file} and {destination_vector_file}: {e}. Skipping to the next file.")
+                continue
 
 def main():
     parser = argparse.ArgumentParser(description="Create expression vector by performing a virtual LR reaction between an entry and destination vector")
