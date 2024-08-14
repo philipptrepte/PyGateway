@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-
+import os 
+# Check if the correct conda environment is activated
+active_env = os.getenv('CONDA_DEFAULT_ENV')
+if active_env != 'PyGateway':
+    print(f"\n !!! Warning: The conda environment 'PyGateway' is not activated. Current active environment: '{active_env}'. \n")
+      
 import argparse
 import csv
-import os
-import sys
 import re
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqIO.XdnaIO import XdnaIterator
-from snapgene_reader import snapgene_file_to_dict, snapgene_file_to_seqrecord
+from snapgene_reader import snapgene_file_to_dict
 
 def read_xdna_file(xdna_file):
     """Reads a .xdna file and transforms all sequences to upper case."""
@@ -236,10 +239,6 @@ def process_folder(entry_vector_folder, dest_vector_folder, features_file, outpu
         print("\nAll files in dest_vector_folder were processed.\n")
 
 def main():
-    active_env = os.getenv('CONDA_DEFAULT_ENV')
-    if active_env != 'PyGateway':
-        print(f"Warning: The conda environment 'PyGateway' is not activated. Current active environment: {active_env}. \n")
-    
     parser = argparse.ArgumentParser(description="Create expression vector by performing a virtual LR reaction between an entry and destination vector")
     parser.add_argument("-e", "--entry_vector_folder", type=str, help="The folder containing all entry vector files", default="import/entry_vectors/")
     parser.add_argument("-d", "--dest_vector_folder", type=str, help="The folder containing all destination vector files", default="import/destination_vectors/")
