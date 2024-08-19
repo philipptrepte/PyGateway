@@ -1,5 +1,5 @@
 # PyGateway
-PyGateway is a Python script to generate expression constructs by performing an in silico LR gateway reaction with entry and destination vectors. The script supports `.xdna`, `.dna` and `.gb` file formats and allows for the addition of features from a CSV file. The output vector files are in `.gb` file format.
+PyGateway is a Python script to generate expression constructs by performing an in silico LR gateway reaction with entry and destination vectors. The script supports `.xdna`, `.dna` and `.gb` file formats and allows for the addition of features from a CSV file. The output vector files are in `.gb` file format and a unique identifier like `TEMP0001` will be preceding the file name, if not provided.
 
 **New entry vector** maps can be created using the [ccsb-vectormaps](https://github.com/csecker/ccsb-vectormaps) repository from [Christopher Secker](https://github.com/csecker).
 
@@ -55,11 +55,12 @@ python create_expression_vector.py --entry_vector_folder <entry_vector_folder> -
 - `--dest_vector_folder` or `-d`: Path to the folder containing destination vector files.
 - `--output_folder` or `-o`: Path to the folder where the output files will be saved.
 - `--features_file` or `-f`: Path to the CSV file containing features to be added.
+- `--identifier` or `-i`: The identifier to use for the first expression vector. All following will be incremented by 1. Default to `TEMP0001`.
 
 ### Example
 
 ```sh
-python create_expression_vector.py --entry_vector_folder import/entry_vectors --dest_vector_folder import/destination_vectors --output_folder output --features_file import/features/all_features.csv
+python create_expression_vector.py --entry_vector_folder import/entry_vectors --dest_vector_folder import/destination_vectors --output_folder output --features_file import/features/all_features.csv --identifier 
 ```
 
 ## Functions

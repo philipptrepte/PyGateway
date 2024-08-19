@@ -8,6 +8,9 @@ if active_env != 'PyGateway':
 import argparse
 import csv
 import re
+import random
+import string
+import glob
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -39,7 +42,7 @@ def read_gb_file(gb_file):
         name = str(gb_file)
         return sequence, name
 
-def create_expression_vector(entry_vector_file, destination_vector_file, output_folder, features_file):
+def create_expression_vector(entry_vector_file, destination_vector_file, output_folder, features_file, identifier=None):
     print(f"Creating expression vector from {entry_vector_file} and {destination_vector_file}")
     if entry_vector_file.endswith(".xdna"):
         entry_vector, entry_vector_name = read_xdna_file(entry_vector_file)
@@ -49,6 +52,15 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
         entry_vector, entry_vector_name = read_gb_file(entry_vector_file)
     else:
         raise ValueError("Invalid file extension for entry vector. Only .xdna, .dna, and .gb files are supported.")
+
+    if identifier is None:
+        while True:
+            random_id = random.choices(string.ascii_lowercase + string.digits, k=4)
+            identifier = "TEMP_" + "".join(random_id)
+            if glob.glob(f"{output_folder}/*{identifier}*"):
+                continue # Create a new identifier
+            else:
+                break # Unique identifier found
 
     # Read the entry and destination vectors
     entry_vector_name = entry_vector_name.split("/")[-1]
@@ -82,6 +94,7 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
         raise ValueError("Invalid file extension for destination vector. Only .xdna, .dna, and .gb files are supported.")
         
     new_name = destination_name.replace("GW", entry_name)
+    new_name = identifier + "_" + new_name
     
     gateway_dict = {"att1_shared" : "TTTGTACAAAAAAG", 
                     "att2_shared" : "CTTTCTTGTACAAAGT"}
@@ -125,7 +138,7 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
     # Create a new SeqRecord for the expression vector
     expression_vector = SeqRecord(
         new_sequence,
-        id=new_name,
+        id=identifier,
         name=new_name,
         description=f"Expression vector containing '{entry_name}' shuttled into '{destination_name}'",
         annotations={"molecule_type": "DNA", "topology": "circular"}
@@ -185,8 +198,11 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
                 expression_vector.features.append(seq_feature)
     
     # Append the entry_name as a feature with type = CDS
-    start = expression_vector.seq.find(sequence_between_entry)+2
-    end = start + len(sequence_between_entry)-6
+    entry_start = expression_vector.seq.find(sequence_between_entry)
+    CDS_start = expression_vector[entry_start:].seq.find('ATG')
+    start = entry_start + CDS_start
+    
+    end = start + len(sequence_between_entry)-7
     if start != -1:
         entry_feature = SeqFeature(
             FeatureLocation(start, end),
@@ -200,29 +216,49 @@ def create_expression_vector(entry_vector_file, destination_vector_file, output_
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    output = os.path.join(output_folder, new_name)
-    SeqIO.write(expression_vector, output + ".gb", "genbank")
+    output = os.path.join(output_folder, new_name) + ".gb"
+    SeqIO.write(expression_vector, output, "genbank")
     print(f"Expression vector map saved to {output}")
 
-def process_folder(entry_vector_folder, dest_vector_folder, features_file, output_folder):
+def process_folder(entry_vector_folder, dest_vector_folder, output_folder, features_file, identifier_start=None):
     """Process all files in the given folders"""
     processed_entry_files = set()
     processed_dest_files = set()
     
-    entry_files = set(os.listdir(entry_vector_folder))
-    dest_files = set(os.listdir(dest_vector_folder))
+    entry_files = {f for f in os.listdir(entry_vector_folder) if f.endswith(('.dna', '.xdna', '.gb'))}
+    dest_files = {f for f in os.listdir(dest_vector_folder) if f.endswith(('.dna', '.xdna', '.gb'))}
 
-    for entry_vector_file in os.listdir(entry_vector_folder):
+    if identifier_start is not None:
+        identifier_letters = re.match(r"([a-zA-Z]+)", identifier_start).group(1)
+        identifier_digits = re.search(r"([0-9]+)", identifier_start).group(1)
+    else:
+        i = 1
+        while True:
+            id = str(i).zfill(4)
+            identifier = "TEMP" + "".join(id)
+            identifier_letters = re.match(r"([a-zA-Z]+)", identifier).group(1)
+            identifier_digits = re.search(r"([0-9]+)", identifier).group(1)
+
+            if glob.glob(f"{output_folder}/*{identifier}*"):
+                i += 1
+                continue # Create a new identifier
+            else:
+                break # Unique identifier found
+    
+    i = 0
+    for entry_vector_file in [f for f in os.listdir(entry_vector_folder) if f.endswith(('.dna', '.xdna', '.gb'))]:
         entry_vector_path = os.path.join(entry_vector_folder, entry_vector_file)
-        for destination_vector_file in os.listdir(dest_vector_folder):
+        for destination_vector_file in [f for f in os.listdir(dest_vector_folder) if f.endswith(('.dna', '.xdna', '.gb'))]:
             destination_vector_path = os.path.join(dest_vector_folder, destination_vector_file)
+            identifier_start = identifier_letters + str(int(identifier_digits) + i).zfill(4)
             try:
-                create_expression_vector(entry_vector_path, destination_vector_path, features_file, output_folder)
+                create_expression_vector(entry_vector_path, destination_vector_path, output_folder, features_file, identifier=identifier_start)
                 processed_entry_files.add(entry_vector_file)
                 processed_dest_files.add(destination_vector_file)
             except ValueError as e:
                 print(f"\n !!! Error processing {entry_vector_file} and {destination_vector_file}: {e} Skipping to the next file. \n")
                 continue
+            i += 1
 
     # Check if all files were processed
     unprocessed_entry_files = entry_files - processed_entry_files
@@ -242,11 +278,12 @@ def main():
     parser = argparse.ArgumentParser(description="Create expression vector by performing a virtual LR reaction between an entry and destination vector")
     parser.add_argument("-e", "--entry_vector_folder", type=str, help="The folder containing all entry vector files", default="import/entry_vectors/")
     parser.add_argument("-d", "--dest_vector_folder", type=str, help="The folder containing all destination vector files", default="import/destination_vectors/")
-    parser.add_argument("-f", "--features_file", type=str, help="The CSV file containing the features to be added to the expression vector", default="import/features/all_features.csv")
     parser.add_argument("-o", "--output_folder", type=str, help="The output folder", default="output/")
+    parser.add_argument("-f", "--features_file", type=str, help="The CSV file containing the features to be added to the expression vector", default="import/features/all_features.csv")
+    parser.add_argument("-i", "--identifier", type=str, help="The identifier to use for the first expression vector. All following will be incremented by 1.", default=None)
     args = parser.parse_args()
     try:
-        process_folder(args.entry_vector_folder, args.dest_vector_folder, args.output_folder, args.features_file)
+        process_folder(args.entry_vector_folder, args.dest_vector_folder, args.output_folder, args.features_file, args.identifier)
     except ValueError as e:
         print(f"Error processing files: {e}.")
         print(f"Check if the correct conda environment is activated. Current active conda environment: {active_env}.")
